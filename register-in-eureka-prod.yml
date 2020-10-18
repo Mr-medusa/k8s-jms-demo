@@ -1,0 +1,18 @@
+# 暴露监控端点
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+eureka:
+  client:
+    # 注册到 eureka
+    register-with-eureka: true
+    # 获取 eureka 注册中心的其它服务
+    fetch-registry: true
+    region: CHINA
+    availability-zones:
+      CHINA: BJ,SH #,GZ
+    service-url:
+      BJ: http://eureka-0.eureka:10086/eureka/
+      SH: http://eureka-1.eureka:10086/eureka/

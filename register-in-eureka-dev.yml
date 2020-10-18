@@ -1,0 +1,24 @@
+# 暴露监控端点
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+eureka:
+  client:
+    # 注册到 eureka
+    register-with-eureka: true
+    # 获取 eureka 注册中心的其它服务
+    fetch-registry: true
+    # 使用默认的 region
+    #    service-url:
+    #      defaultZone: http://eureka3001.com:3002/eureka,http://eureka3003.com:3003/eureka
+    # ---------------   自定义 region --------------------------
+    region: CHINA
+    availability-zones:
+      CHINA: BJ,SH #,GZ
+    service-url:
+      BJ: http://eureka3001.com:3001/eureka
+      SH: http://eureka3002.com:3002/eureka
+Mr:
+  Say: 'Hello World'
