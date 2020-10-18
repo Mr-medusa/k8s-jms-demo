@@ -1,0 +1,6 @@
+/**/*.iml
+/.idea/
+/**/target
+/dependencies/zipkin-server-2.12.9-exec.jar
+/dependencies/k8s-front/node_modules
+/dependencies/k8s-front/build

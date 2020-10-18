@@ -1,0 +1,69 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: hystrix-dashboard
+  labels:
+    app: hystrix-dashboard
+spec:
+  ports:
+    - port: 5050
+      nodePort: 8888
+      name: hystrix-dashboard
+      targetPort: 5050
+  type: NodePort
+  selector:
+    app: hystrix-dashboard
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: hystrix-dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hystrix-dashboard
+  template:
+    metadata:
+      labels:
+        app: hystrix-dashboard
+    spec:
+      imagePullSecrets:
+        - name: $SECRET_NAME
+      containers:
+        - name: hystrix-dashboard
+          image: $IMAGE_NAME
+          ports:
+            - containerPort: 5050
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: hystrix-dashboard
+  annotations:
+    nginx.org/websocket-services: "hystrix-dashboard"
+    kubernetes.io/ingress.class: traefik
+    ingress.kubernetes.io/affinity: "cookie"
+    ingress.kubernetes.io/session-cookie-name: "route"
+    ingress.kubernetes.io/session-cookie-hash: "sha1"
+    #配置websocket 需要的配置
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header Upgrade "websocket";
+      proxy_set_header Connection "Upgrade";
+      compute-full-forwarded-for: "true";
+      forwarded-for-header: "X-Forwarded-For";
+      use-forwarded-headers: "true";
+spec:
+  rules:
+    - host: hystrix-dashboard.medusa.com
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: hystrix-dashboard
+              servicePort: 5050
+          - path: /ws
+            backend:
+              serviceName: hystrix-dashboard
+              servicePort: 5050

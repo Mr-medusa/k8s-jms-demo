@@ -1,0 +1,46 @@
+server:
+  port: 5002
+spring:
+  profiles:
+    active: prod
+  application:
+    name: k8s-jms-feign-hystrix-consumer5002
+  zipkin:
+    enabled: false
+    base-url: http://localhost:9411
+  sleuth:
+    sampler:
+      #采样率值介于 0 到 1 之间，1 则表示全部采集
+      probability: 1
+  cloud:
+    config:
+      uri: http://localhost:4001 #配置中心地址 | 使用下面的自动发现
+      label: master             #分支名称
+      name: register-in-eureka  #配置文件名称
+      profile: dev              #读取后缀名称
+      # 自动发现
+      # 上述3个综合: master分支上config-dev.yml的配置文件被读取http://config-3344.com:3344/master/config-dev.yml
+      # 注意: 想要自动发现得先注册进 Eureka, 否则使用 url 先获取 config 配置
+#      discovery:
+#        enabled: true
+#        service-id: k8s-jms-config-server
+
+#logging:
+#  level:
+#    red:
+#      medusa:
+#        service:
+#          HystrixFeignService: debug
+---
+spring:
+  profiles: prod
+  cloud:
+    config:
+      profile: prod
+      uri: http://spring-config.medusa.com
+  zipkin:
+    enabled: true
+    base-url: http://sleuth.medusa.com
+eureka:
+  instance:
+    hostname: "hystrix-consumer-0.hystrix-consumer"

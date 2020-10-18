@@ -1,0 +1,50 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: sleuth
+  labels:
+    app: sleuth
+spec:
+  ports:
+    - port: 9411
+      nodePort: 5311
+      name: sleuth
+      targetPort: 9411
+  type: NodePort
+  selector:
+    app: sleuth
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: sleuth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sleuth
+  template:
+    metadata:
+      labels:
+        app: sleuth
+    spec:
+      containers:
+        - name: sleuth
+          image: hub.medusa.com/library/zipkin-server:2.12.9
+          ports:
+            - containerPort: 9411
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: sleuth
+spec:
+  rules:
+    - host: sleuth.medusa.com
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: sleuth
+              servicePort: 9411

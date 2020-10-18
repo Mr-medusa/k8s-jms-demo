@@ -1,0 +1,53 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: hystrix-consumer
+  labels:
+    app: hystrix-consumer
+spec:
+  ports:
+    - port: 5002
+      nodePort: 5211
+      name: hystrix-consumer
+      targetPort: 5002
+  type: NodePort
+  selector:
+    app: hystrix-consumer
+---
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: hystrix-consumer
+spec:
+  serviceName: "hystrix-consumer"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hystrix-consumer
+  template:
+    metadata:
+      labels:
+        app: hystrix-consumer
+    spec:
+      imagePullSecrets:
+        - name: $SECRET_NAME
+      containers:
+        - name: hystrix-consumer
+          image: $IMAGE_NAME
+          ports:
+            - containerPort: 5002
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: hystrix-consumer
+spec:
+  rules:
+    - host: hystrix-consumer.medusa.com
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: hystrix-consumer
+              servicePort: 5002

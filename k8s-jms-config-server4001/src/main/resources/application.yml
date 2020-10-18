@@ -1,0 +1,68 @@
+server:
+  port: 4001
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+spring:
+  profiles:
+    active: prod
+  application:
+    name:  k8s-jms-config-server
+  cloud:
+    config:
+      server:
+        git:
+          # http://localhost:4001/master/register-in-eureka-dev.yml
+          # uri: https://gitee.com/Mr-Medusa/tmp.git #GitHub上面的git仓库名字
+          uri: file:///E:\developmentForWeb\k8s-jms-config #GitHub上面的git仓库名字
+####搜索目录
+#          search-paths: [project_group_a,project_group_b]
+      ####读取分支
+      label: master
+eureka:
+  client:
+    register-with-eureka: true
+    # 不从注册中心发现其它服务,且使用远程拉取配置信息时应使用 bootstrap.yml 进行配置
+    fetch-registry: false
+    # 使用默认的 region
+    #    service-url:
+    #      defaultZone: http://eureka3001.com:3002/eureka,http://eureka3003.com:3003/eureka
+    # ---------------   自定义 region --------------------------
+    region: CHINA
+    availability-zones:
+      CHINA: BJ,SH #,GZ
+    service-url:
+      BJ: http://eureka3001.com:3001/eureka
+      SH: http://eureka3002.com:3002/eureka
+---
+spring:
+  profiles: test
+  cloud:
+    config:
+      server:
+        git:
+          uri: http://gitlab.medusa.com/k8s-ms/k8s-jms-config-repo.git
+          username: barbara
+          password: barbara123
+eureka:
+  client:
+    fetch-registry: false
+    register-with-eureka: false
+---
+spring:
+  profiles: prod
+  cloud:
+    config:
+      server:
+        git:
+          uri: http://gitlab.medusa.com/k8s-ms/k8s-jms-config-repo.git
+          username: barbara
+          password: barbara123
+eureka:
+  client:
+    service-url:
+      BJ: http://eureka-0.eureka:10086/eureka/
+      SH: http://eureka-1.eureka:10086/eureka/
+

@@ -1,0 +1,50 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: config-server
+  labels:
+    app: config-server
+spec:
+  ports:
+    - port: 4001
+      name: config-server
+      targetPort: 4001
+  selector:
+    app: config-server
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: config-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: config-server
+  template:
+    metadata:
+      labels:
+        app: config-server
+    spec:
+      imagePullSecrets:
+        - name: $SECRET_NAME
+      containers:
+        - name: config-server
+          image: $IMAGE_NAME
+          ports:
+            - containerPort: 4001
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: config-server
+spec:
+  rules:
+    - host: spring-config.medusa.com
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: config-server
+              servicePort: 4001

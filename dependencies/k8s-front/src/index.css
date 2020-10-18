@@ -1,0 +1,67 @@
+.clearfix:after {
+    content: '';
+    clear: both;
+    display: block;
+}
+
+#websock-container {
+    display: flex;
+    width: 100%;
+}
+
+#console-container {
+    margin-lef: 15px;
+    flex: 1;
+}
+
+#connect-container {
+    text-align: start;
+    max-width: 200px;
+    width: 200px;
+    margin-left: 10px;
+}
+
+/*--------------------------------------*/
+#connect-container button {
+    padding: 5px;
+    border-radius: 3px;
+}
+
+.console {
+    border: 1px solid #cccccc;
+    border-right-color: #999999;
+    border-bottom-color: #999999;
+    height: 200px;
+    overflow-y: auto;
+    padding: 5px;
+    width: 100%;
+    margin-top: 10px;
+    background-color: black;
+    color: white;
+    font-family: "Comic Sans MS", Consolas, sans-serif, 微软雅黑;
+    border-radius: 10px;
+    padding-left: 12px;
+    box-sizing: border-box;
+}
+
+.console p {
+    padding: 0;
+    margin: 0;
+}
+
+#status {
+    border: 1px dashed gray;
+    border-radius: 8px;
+    padding: 10px;
+    background-color: #feffc7;
+}
+
+#status span {
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    border-radius: 8px;
+    margin: 0 10px;
+    padding: 3px;
+    background-color: #ff4d00;
+    color: #ffd27b;
+}

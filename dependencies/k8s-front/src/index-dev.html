@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Spring WebSocket</title>
+</head>
+<body>
+<div style="width: 100%">
+    <iframe width="100%" height="400px" src="/hystrix/monitor?stream=http%3A%2F%2Flocalhost%3A5001%2Factuator%2Fhystrix.stream"></iframe>
+</div>
+<div id="websock-container">
+    <div id="console-container">
+        <div id="status">
+            <span>SN(业务耗时): ms</span>
+            <span>DE(网络延时): ms</span>
+            <span>RSP(调用成功率): %</span>
+        </div>
+        <div id="console-success" class="console"></div>
+        <div id="console-fallback" class="console"></div>
+        <div id="console-circuit" class="console"></div>
+    </div>
+    <div id="connect-container">
+        <button id="connect" onclick="connect()">Connect</button>
+        <button id="disconnect" disabled=disabled onclick="disconnect()">Disconnect</button>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/sockjs/0.3.4/sockjs.min.js"></script>
+</body>
+</html>

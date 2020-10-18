@@ -1,0 +1,66 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: eureka
+  labels:
+    app: eureka
+spec:
+  ports:
+    - port: 10086
+      nodePort: 5555
+      name: eureka
+      targetPort: 10086
+  type: NodePort
+  selector:
+    app: eureka
+---
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: eureka
+spec:
+  serviceName: "eureka"
+  replicas: 2
+  selector:
+    matchLabels:
+      app: eureka
+  template:
+    metadata:
+      labels:
+        app: eureka
+    spec:
+      imagePullSecrets:
+        - name: $SECRET_NAME
+      containers:
+        - name: eureka
+          image: $IMAGE_NAME
+          ports:
+            - containerPort: 10086
+          env:
+            - name: MY_POD_NAME  # 当前的 metadata.name: eureka-0累加
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: EUREKA_SERVER
+              value: "http://eureka-0.eureka:10086/eureka/,http://eureka-1.eureka:10086/eureka/"
+            - name: EUREKA_INSTANCE_HOSTNAME
+              # .eureka = 上面定义的serviceName(服务名)
+              # pattern: pod-specific-string.serviceName.default.svc.cluster.local where "pod-specific-string" is managed by the StatefulSet controller.
+              # 通过永远不改变Pod名称的方式StatefulSet保证了Pod网络标识的稳定性,不管Pod是被删除重启还是被调度到其它节点上都不会改变Pod的名称
+              value: ${MY_POD_NAME}.eureka
+  podManagementPolicy: "Parallel"
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: eureka
+spec:
+  rules:
+    - host: eureka.medusa.com
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: eureka
+              servicePort: 10086

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hystrix Dashboard</title>
+</head>
+<style>
+    .clearfix:after {
+        content: '';
+        clear: both;
+        display: block;
+    }
+
+    #websock-container {
+        display: flex;
+        width: 100%;
+    }
+
+    #console-container {
+        margin-lef: 15px;
+        flex: 1;
+    }
+
+    #connect-container {
+        text-align: start;
+        max-width: 200px;
+        width: 200px;
+        margin-left: 10px;
+    }
+
+    /*--------------------------------------*/
+    #connect-container button {
+        padding: 5px;
+        border-radius: 3px;
+    }
+
+    .console {
+        border: 1px solid #cccccc;
+        border-right-color: #999999;
+        border-bottom-color: #999999;
+        height: 200px;
+        overflow-y: auto;
+        padding: 5px;
+        width: 100%;
+        margin-top: 10px;
+        background-color: black;
+        color: white;
+        font-family: "Comic Sans MS", Consolas, sans-serif, 微软雅黑;
+        border-radius: 10px;
+        padding-left: 12px;
+        box-sizing: border-box;
+    }
+
+    .console p {
+        padding: 0;
+        margin: 0;
+    }
+
+    #status {
+        border: 1px dashed gray;
+        border-radius: 8px;
+        padding: 10px;
+        background-color: #feffc7;
+    }
+
+    #status span {
+        -webkit-border-radius: 8px;
+        -moz-border-radius: 8px;
+        border-radius: 8px;
+        margin: 0 10px;
+        padding: 3px;
+        background-color: #ff4d00;
+        color: #ffd27b;
+    }
+
+</style>
+<body>
+<div style="width: 100%">
+    <iframe width="100%" height="400px" src="/hystrix/monitor?stream=hystrix-provider-0.hystrix-provider.default.svc.cluster.local%3A5001%2Factuator%2Fhystrix.stream%20"></iframe>
+</div>
+<div id="websock-container">
+    <div id="console-container">
+        <div id="status">
+            <span>SN(业务耗时): ms</span>
+            <span>DE(网络延时): ms</span>
+            <span>RSP(调用成功率): %</span>
+        </div>
+        <div id="console-success" class="console"></div>
+        <div id="console-fallback" class="console"></div>
+        <div id="console-circuit" class="console"></div>
+    </div>
+    <div id="connect-container">
+        <button id="connect" onclick="connect()">Connect</button>
+        <button id="disconnect" disabled=disabled onclick="disconnect()">Disconnect</button>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/sockjs/0.3.4/sockjs.min.js"></script>
+<script>
+    /**
+     *扩展ie中不兼容的startsWith
+     */
+    String.prototype.startsWith = String.prototype.startsWith || function (str) {
+        let reg = new RegExp("^" + str);
+        return reg.test(this);
+    }
+
+    let ws = null;
+
+    function setConnected(connected) {
+        document.getElementById('connect').disabled = connected;
+        document.getElementById('disconnect').disabled = !connected;
+    }
+
+    function connect() {
+        ws = new SockJS('/echo');
+        ws.onopen = function () {
+            setConnected(true);
+            log('建立连接成功!')
+        };
+        ws.onmessage = function (event) {
+            log(event.data);
+        };
+        ws.onclose = function () {
+            setConnected(false);
+            log('已关闭连接!')
+        }
+    }
+
+    function disconnect() {
+        if (ws != null) {
+            ws.close();
+            ws = null;
+        }
+        setConnected(false);
+    }
+
+    let console01 = document.getElementById('console-success');
+    let console02 = document.getElementById('console-fallback');
+    let console03 = document.getElementById('console-circuit');
+
+    function log(message) {
+        let highlight = false;
+        let console = null;
+        if (message.startsWith('成功测试')) {
+            console = console01;
+        } else if (message.startsWith('超时测试')) {
+            console = console02;
+        } else if (message.startsWith('熔断测试')) {
+            console = console03;
+        } else if (message.startsWith('FALLBACK')) {
+            highlight = true;
+            console = console02;
+        } else if (message.startsWith('CIRCUIT')) {
+            highlight = true;
+            console = console03;
+        } else {
+            doLog(console01, highlight, message);
+            doLog(console02, highlight, message);
+            doLog(console03, highlight, message);
+        }
+
+        doLog(console, highlight, message);
+    }
+
+    function doLog(console, highlight, message) {
+        if (console) {
+            let p = document.createElement('p');
+            p.style.wordWrap = 'pre-line';
+            if (highlight) {
+                p.style.color = 'red';
+            }
+            p.appendChild(document.createTextNode(message));
+            console.appendChild(p);
+            while (console.childNodes.length > 50)
+                console.removeChild(console.firstChild);
+            console.scrollTop = console.scrollHeight;
+        }
+    }
+
+    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    //+++++++++++++++++++++++++++++++++++++      init            ++++++++++++++++++++++++++++++++++++++++++++++++
+    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    connect();
+</script>
+</body>
+</html>

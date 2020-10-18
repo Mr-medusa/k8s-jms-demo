@@ -1,0 +1,53 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: hystrix-provider
+  labels:
+    app: hystrix-provider
+spec:
+  ports:
+    - port: 5001
+      nodePort: 5111
+      name: hystrix-provider
+      targetPort: 5001
+  type: NodePort
+  selector:
+    app: hystrix-provider
+---
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: hystrix-provider
+spec:
+  serviceName: "hystrix-provider"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hystrix-provider
+  template:
+    metadata:
+      labels:
+        app: hystrix-provider
+    spec:
+      imagePullSecrets:
+        - name: $SECRET_NAME
+      containers:
+        - name: hystrix-provider
+          image: $IMAGE_NAME
+          ports:
+            - containerPort: 5001
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: hystrix-provider
+spec:
+  rules:
+    - host: hystrix-provider.medusa.com
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: hystrix-provider
+              servicePort: 5001

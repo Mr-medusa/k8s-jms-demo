@@ -1,0 +1,26 @@
+server:
+  port: 3002
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+spring:
+  application:
+    name: k8s-jms-eureka-server3002
+eureka:
+  instance:
+    hostname: eureka3002.com
+  client:
+    register-with-eureka: true
+    fetch-registry: false
+    region: CHINA
+    availability-zones:
+      CHINA: BJ #,GZ
+    service-url:
+      BJ: http://eureka3001.com:3001/eureka
+#      GZ: http://eureka3003.com:3003/eureka
+  server:
+    #关闭自我保护机制,保证不可用服务被及时踢除
+    enable-self-preservation: false
+    eviction-interval-timer-in-ms: 1000
