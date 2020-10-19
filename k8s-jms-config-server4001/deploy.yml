@@ -13,11 +13,12 @@ spec:
   selector:
     app: config-server
 ---
-kind: Deployment
-apiVersion: extensions/v1beta1
+kind: StatefulSet
+apiVersion: apps/v1
 metadata:
   name: config-server
 spec:
+  serviceName: "config-server"
   replicas: 1
   selector:
     matchLabels:
@@ -34,6 +35,10 @@ spec:
           image: $IMAGE_NAME
           ports:
             - containerPort: 4001
+      initContainers:
+        - name: init-myservice
+          image: hub.medusa.com/library/curl_centos7:v1.0
+          command: ['sh','-c','until [ "$(curl -I -o /dev/null -s -w %{http_code} http://eureka-0.eureka:10086/actuator/info)" -ge 200 ] && [ "$(curl -I -o /dev/null -s -w %{http_code} http://eureka-0.eureka:10086/actuator/info)" -le 400 ]; do echo waiting svc...; sleep 2; done;']
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
